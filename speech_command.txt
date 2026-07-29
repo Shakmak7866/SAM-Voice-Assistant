@@ -1,0 +1,2 @@
+python speech.py 2>/dev/null
+This command will bypass errors that show up by ALSA
