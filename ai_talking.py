@@ -6,36 +6,55 @@ from ollama import chat
 from ollama import ChatResponse
 
 
-response: ChatResponse = chat(
+def speak(text):
+    model_path = "en_US-arctic-medium.onnx"
+    config_path = "en_US-arctic-medium.onnx.json"
+
+    voice = PiperVoice.load(model_path, config_path=config_path)
+
+    syn_config = SynthesisConfig(
+        length_scale = 0.7,
+        speaker_id=6 # 5 6 8 16
+    )
+
+    for chunk in voice.synthesize(text, syn_config=syn_config):
+        audio = np.frombuffer(
+            chunk.audio_int16_bytes,
+            dtype=np.int16
+        )
+        sd.play(audio, voice.config.sample_rate)
+        sd.wait()
+
+    print("Audio Complete")
+
+
+stream = chat(
     model = 'gemma3:1b',
     messages=[
         {
             'role': 'user',
-            'content': 'Hello! Tell me a one-sentence fun fact about python',
+            'content': 'Hello! You are a voice assistant named SAM. Can you tell me What is the Bergman Projection regarding complex analysis in 50-100 words?',
         },
-    ]
+    ],
+    stream=True
 )
 
-print(response['message']['content'])
-text = response['message']['content']
+sentence = ""
 
-model_path = "en_US-arctic-medium.onnx"
-config_path = "en_US-arctic-medium.onnx.json"
+for response in stream:
+    token = response['message']['content']
+    print(token, end="", flush=True)
 
-voice = PiperVoice.load(model_path, config_path=config_path)
+    sentence += token
 
-syn_config = SynthesisConfig(
-    length_scale = 0.7,
-    speaker_id=6 # 5 6 8 16
-)
+    if any(x in token for x in [".", "!", "?"]):
+        speak(sentence)
+        sentence=""
 
-for chunk in voice.synthesize(text, syn_config=syn_config):
-    audio = np.frombuffer(
-        chunk.audio_int16_bytes,
-        dtype=np.int16
-    )
-    sd.play(audio, voice.config.sample_rate)
-    sd.wait()
+if sentence:
+    speak(sentence)
+
 
 print("Audio Complete")
+
 
