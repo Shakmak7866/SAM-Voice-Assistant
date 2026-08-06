@@ -14,7 +14,7 @@ def speak(text):
 
     syn_config = SynthesisConfig(
         length_scale = 0.7,
-        speaker_id=6 # 5 6 8 16
+        speaker_id=16 # 5 6 8 16
     )
 
     for chunk in voice.synthesize(text, syn_config=syn_config):
@@ -29,11 +29,11 @@ def speak(text):
 
 
 stream = chat(
-    model = 'gemma3:1b',
+    model = 'qwen3:1.7b',
     messages=[
         {
             'role': 'user',
-            'content': 'Hello! You are a voice assistant named SAM. Can you tell me What is the Bergman Projection regarding complex analysis in 50-100 words?',
+            'content': 'Hello! You are a voice assistant named SAM. Can you tell me how you work in 50-100 words?',
         },
     ],
     stream=True

@@ -1,26 +1,31 @@
 import sounddevice as sd
 import numpy as np
-from piper import PiperVoice
-from piper.config import SynthesisConfig
+from kokoro_onnx import Kokoro
 
-model_path = "en_US-arctic-medium.onnx"
-config_path = "en_US-arctic-medium.onnx.json"
+model_path = "kokoro-v1.0.onnx"
+voices_path = "voices-v1.0.bin"
 
-voice = PiperVoice.load(model_path, config_path=config_path)
+kokoro = Kokoro(model_path, voices_path)
 
-text = "Hello! My name is Arctic from the Piper Voice API. I was built by peter pan"
+text = "Hello! My name is Sam from the Kokoro Voice API. I am your personal Voice Assistant."
 
-syn_config = SynthesisConfig(
-    length_scale = 0.7,
-    speaker_id=6 # 5 6 8 16
+audio, sample_rate = kokoro.create(
+    text=text,
+    voice="af_heart",
 )
 
-for chunk in voice.synthesize(text, syn_config=syn_config):
-    audio = np.frombuffer(
-        chunk.audio_int16_bytes,
-        dtype=np.int16
-    )
-    sd.play(audio, voice.config.sample_rate)
-    sd.wait()
+sd.play(audio, sample_rate)
+sd.wait()
+
+
+text = "How shall I help you today?!"
+
+audio, sample_rate = kokoro.create(
+    text=text,
+    voice="af_heart",
+)
+
+sd.play(audio, sample_rate)
+sd.wait()
 
 print("Audio Complete")
