@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
+from pyqtgraph.Qt import QtCore
 import pyqtgraph.opengl as gl
 
 if 'darwin' in sys.platform:
@@ -23,6 +24,13 @@ g.scale(2,2,1)
 w.addItem(g)
 '''
 
+## Example 3:
+## sphere
+
+md = gl.MeshData.sphere(rows=10, cols=20)
+m3 = gl.GLMeshItem(meshdata=md, smooth=True, color=(0.0, 0,5, 0.5, 1), shader="shaded")
+w.addItem(m3)
+
 
 ## Example 2:
 ## Array of vertex positions, three per face
@@ -32,9 +40,6 @@ verts[:,0] = np.vstack([2*np.cos(theta), 2*np.sin(theta), [0]*36]).T
 verts[:,1] = np.vstack([4*np.cos(theta+0.2), 4*np.sin(theta+0.2), [-1]*36]).T
 verts[:,2] = np.vstack([4*np.cos(theta-0.2), 4*np.sin(theta-0.2), [1]*36]).T
 
-# Apply Slant
-#verts[:, :, 0] += 1 * verts[:, :, 2]
-#verts[:, :, 1] += 0 * verts[:, :, 2]
     
 ## Colors are specified per-vertex
 colors = np.random.random(size=(verts.shape[0], 3, 4))
@@ -46,14 +51,17 @@ m2 = gl.GLMeshItem(vertexes=verts, vertexColors=colors, smooth=True, shader='sha
 m2.rotate(25, 0, 1, 0)
 w.addItem(m2)
 
+def update_rotation():
+    m2.rotate(2, 1, 1, 1)
 
+# TODO Make a function that upon an input, will momentarily implement these two changes, then revert back to normal.
+#m2.scale(2, 2, 2)
+#m3.scale(1,1,1)
 
-## Example 3:
-## sphere
+timer = QtCore.QTimer()
+timer.timeout.connect(update_rotation)
+timer.start(16)
 
-md = gl.MeshData.sphere(rows=10, cols=20)
-m3 = gl.GLMeshItem(meshdata=md, smooth=True, color=(0.0, 0,5, 0.5, 1), shader="shaded")
-w.addItem(m3)
 
 
 
