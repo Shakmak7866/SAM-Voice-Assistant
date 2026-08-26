@@ -1,4 +1,6 @@
 import sys
+import time
+import math
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
@@ -16,7 +18,8 @@ app = pg.mkQApp("GLMeshItem Example")
 w = gl.GLViewWidget()
 w.show()
 w.setWindowTitle('pyqtgraph example: GLMeshItem')
-w.setCameraPosition(distance=40)
+w.setCameraPosition(distance=30)
+w.setBackgroundColor(0.9,0.9,0.9,0.9)
 
 '''
 g = gl.GLGridItem()
@@ -51,12 +54,44 @@ m2 = gl.GLMeshItem(vertexes=verts, vertexColors=colors, smooth=True, shader='sha
 m2.rotate(25, 0, 1, 0)
 w.addItem(m2)
 
-def update_rotation():
-    m2.rotate(2, 1, 1, 1)
+curr_rot = 0
+pulse_start = 0
+pulse_peak = 0.5
+is_interrupted = False
 
-# TODO Make a function that upon an input, will momentarily implement these two changes, then revert back to normal.
-#m2.scale(2, 2, 2)
-#m3.scale(1,1,1)
+# This right here is determining the size, correct?
+# Then the longer the sound, the longer the duration
+pulse_dur = 0.75
+
+def update_rotation():
+    global curr_rot, pulse_start, is_interrupted
+
+    curr_rot += 1
+
+    elapsed = time.time() - pulse_start
+
+    # We will replace this later with PyAudio sound
+    # Have the target_peak be equal to the level of sound that is coming
+    if is_interrupted:
+        curr_rot += 2
+        progress = elapsed / pulse_dur
+        scale_factor = 1 + pulse_peak * math.sin(progress * math.pi)
+        if elapsed >= pulse_dur:
+            is_interrupted = False
+    elif elapsed < pulse_dur:
+        progress = elapsed / pulse_dur
+        scale_factor = 1 + pulse_peak * math.sin(progress * math.pi)
+        curr_rot += 2
+    else:
+        scale_factor = 1
+
+    m2.resetTransform()
+    m2.rotate(25,0,1,0)
+    m2.rotate(curr_rot, 1, 1, 1)
+    m2.scale(scale_factor, scale_factor, scale_factor,)
+
+    m3.resetTransform()
+    m3.scale(scale_factor, scale_factor, scale_factor,)
 
 timer = QtCore.QTimer()
 timer.timeout.connect(update_rotation)
@@ -64,7 +99,22 @@ timer.start(16)
 
 
 
+def pulse(ev):
+    global pulse_start, is_interrupted
+    elapsed = time.time() - pulse_start
+
+    if elapsed < pulse_dur and pulse_start != 0:
+        is_interrupted = True
+    else:
+        is_interrupted = False
+        pulse_start = time.time()
+
+
+w.mousePressEvent = pulse
+
+
+    
+
 
 if __name__ == '__main__':
     pg.exec()
-

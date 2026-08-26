@@ -1,0 +1,7 @@
+kokoro_onnx
+numpy
+ollama
+piper
+pyqtgraph
+sounddevice
+vosk
